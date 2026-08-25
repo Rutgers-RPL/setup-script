@@ -30,7 +30,6 @@ echo "--> Installing ARM Cross-Compiler (arm-none-eabi-gcc)..."
 sudo apt-get install -y \
     gcc-arm-none-eabi \
     binutils-arm-none-eabi \
-    gdb-arm-none-eabi \
     libnewlib-arm-none-eabi
 
 # 5. Install hardware flashing and debugging utilities

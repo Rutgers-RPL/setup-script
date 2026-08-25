@@ -4,10 +4,11 @@
 ```
 wsl --install
 ```
-and then restart your computer. Now that you have wsl installed, open up cmd again, and type wsl. This will open your default distro. After that, it will prompt you to make a username and password. Make sure you remember this password.
+and then restart your computer. Now that you have wsl installed, open up cmd again, and type wsl. This will open your default distro. After that, it will prompt you to make a username and password. Make sure you remember this password. 
+Note that the ubuntu it installs might not actually be recent enough, if so that's fine. Just go back to powershell, run `wsl --unregister Ubuntu`, then type `wsl --list --online` to see all the options. For a tested and working option, just pick `Ubuntu-26.04`, but you're free to go for a different option.
 
 ## Step 2: Installing tools
-Run
+First update everything by running `sudo apt-get update`, then `sudo apt-get upgrade`. Then run
 ```
 curl -fsSL https://raw.githubusercontent.com/Rutgers-RPL/setup-script/refs/heads/main/setup.sh | bash
 ```
