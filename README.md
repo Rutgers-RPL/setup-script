@@ -21,7 +21,7 @@ Make sure you have vscode installed, and add it to your path. In wsl, you should
     "clangd.path": "/usr/bin/clangd",
     "clangd.arguments": [
         "--compile-commands-dir=build/Debug",
-        "--query-driver=/usr/bin/arm-none-eabi-gcc",
+        "--query-driver=/usr/bin/arm-none-eabi-g++",
         "--background-index"
     ]
 }
