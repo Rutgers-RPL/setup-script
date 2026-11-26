@@ -36,8 +36,9 @@ sudo apt-get install -y \
 echo "--> Installing hardware utilities (OpenOCD, STLink Tools)..."
 sudo apt-get install -y \
     openocd \
-    stlink-tools
-
+    stlink-tools \
+    tio
+    
 # 6. Verification
 echo "===================================================="
 echo " Verification"
@@ -48,6 +49,7 @@ echo -n "ARM GCC version:     " && arm-none-eabi-gcc --version | head -n 1
 echo -n "Clangd version:      " && clangd --version
 echo -n "OpenOCD version:     " && openocd --version | head -n 1
 echo -n "ST-Link CLI version: " && st-info --version
+echo -n "tio version: 	      " && tio --version
 
 echo "===================================================="
 echo " Setup Complete! You are ready to build and flash."
