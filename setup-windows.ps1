@@ -6,7 +6,6 @@ $packages = @(
     'BrechtSanders.WinLibs.POSIX.UCRT'
 )
 
-# Back up the original PATH
 $userKey = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Environment')
 $machineKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey('SYSTEM\CurrentControlSet\Control\Session Manager\Environment')
 $raw = [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames
@@ -19,9 +18,7 @@ New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
 $backup = Join-Path $backupDir ('path-' + [Guid]::NewGuid().ToString('N') + '.json')
 @{ UserPath = $originalUser; UserPathKind = "$originalKind"; MachinePath = $originalMachine; SessionPath = $originalSession } |
     ConvertTo-Json | Set-Content -LiteralPath $backup -Encoding UTF8
-Write-Host "PATH backup: $backup"
 
-# Append only
 function Merge-Path([string]$Base, [string[]]$Entries) {
     foreach ($entry in $Entries) {
         if ($entry -and (($Base -split ';') -cnotcontains $entry)) {
@@ -44,7 +41,6 @@ if (-not (Test-Path -LiteralPath $winget -PathType Leaf)) {
     $winget = (Get-Command winget.exe -CommandType Application).Source
 }
 
-# Save every PATH entry seen during installation
 $state = @{ User = $originalUser; Changed = $false }
 function Protect-UserPath([string[]]$Extra = @()) {
     $current = [string]$userKey.GetValue('Path', '', $raw)
@@ -57,21 +53,18 @@ function Protect-UserPath([string[]]$Extra = @()) {
     if ($current -cne $desired -or $currentKind -ne $kind) {
         $userKey.SetValue('Path', $desired, $kind)
         $state.Changed = $true
-        Write-Host 'Preserved existing user PATH and appended new entries.'
     }
     $state.User = $desired
-    # Do not discard the current process's existing PATH either
     $env:Path = Merge-Path $env:Path ((Get-PersistentPath) -split ';')
 }
 
-# Never modify the machine PATH
 function Assert-MachinePath {
     $current = [string]$machineKey.GetValue('Path', '', $raw)
     $missing = @($originalMachine -split ';' | Where-Object { $_ -and (($current -split ';') -cnotcontains $_) })
     if ($missing.Count) { throw "An installer changed existing system PATH entries. Review $backup before continuing." }
 }
 
-# Temporarily use TAR extraction, restoring the original file byte-for-byte
+# Temporarily use TAR extraction, restoring the original file byte-for-byte.
 $settings = Join-Path $env:LOCALAPPDATA 'Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json'
 $settingsBackup = "$settings.rpl-backup"
 if (Test-Path -LiteralPath $settingsBackup) { throw "Existing WinGet settings backup: $settingsBackup. Review it before retrying." }
@@ -93,6 +86,7 @@ try {
         }
     }
 
+    # SerialScope is distributed through the Microsoft Store, not winget source.
     try {
         & $winget install --id 9NSVHTVWKC2X --exact --source msstore --accept-package-agreements --accept-source-agreements
         if ($LASTEXITCODE -notin @(0, -1978335189)) {
@@ -111,14 +105,13 @@ try {
     }
 }
 
-# Append WindowsApps only if missing
 $extra = @()
 $persistent = Get-PersistentPath
 if (($persistent -split ';') -notcontains $windowsApps -and (Test-Path -LiteralPath $windowsApps)) {
     $extra += $windowsApps
 }
 
-# Locate clangd in WinGet's actual package directories if it isn't on PATH
+# Locate clangd in WinGet's actual package directories if it isn't on PATH.
 $clangdOnPath = @($persistent -split ';' | Where-Object {
     $_ -and (Test-Path -LiteralPath ($_.Trim('"') + '\clangd.exe') -PathType Leaf -ErrorAction SilentlyContinue)
 })
@@ -134,13 +127,11 @@ if (-not $clangdOnPath.Count) {
 Protect-UserPath $extra
 Assert-MachinePath
 
-# Confirm that the final raw user PATH retains the original text and order
 $finalUser = [string]$userKey.GetValue('Path', '', $raw)
 if ($originalUser -and -not $finalUser.StartsWith($originalUser, [StringComparison]::Ordinal)) {
     throw "Original user PATH not preserved. Review $backup."
 }
 
-# Check persistent PATH only
 $tools = 'winget', 'git', 'cmake', 'ninja', 'clangd', 'gcc', 'g++', 'arm-none-eabi-gcc', 'arm-none-eabi-g++', 'arm-none-eabi-gdb', 'arm-none-eabi-objcopy', 'arm-none-eabi-size', 'openocd'
 $session = $env:Path
 try {
@@ -153,4 +144,4 @@ try {
 } finally { $env:Path = $session }
 if ($state.Changed) { Write-Host 'Sign out and back in to ensure all Windows applications receive the updated PATH.' }
 if ($missing) { throw "Missing tools: $($missing -join ', ')" }
-Write-Host 'Setup complete. Original user PATH preserved.'
+Write-Host 'Setup complete. You are ready to build and flash.'
