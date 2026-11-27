@@ -1,20 +1,31 @@
 # Setting up RPL dev environment
-## Step 1:
-[This](https://learn.microsoft.com/en-us/windows/wsl/install) page from windows covers everything you need to do to install wsl. If you care to select which distro, you can read how to do it there. If you don't care, just open cmd as admin and run
+
+## Windows Instructions
+
+Run the command below in PowerShell:
+
+```
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command 'curl.exe -fsSL https://raw.githubusercontent.com/Rutgers-RPL/setup-script/main/setup-windows.ps1 | Out-String | iex'
+```
+
+## Linux/WSL Instructions
+
+### Step 1 (if not running Linux already): Installing WSL
+[This](https://learn.microsoft.com/en-us/windows/wsl/install) page from windows covers everything you need to do to install WSL. If you care to select which distro, you can read how to do it there. If you don't care, just open cmd as admin and run
 ```
 wsl --install
 ```
-and then restart your computer. Now that you have wsl installed, open up cmd again, and type wsl. This will open your default distro. After that, it will prompt you to make a username and password. Make sure you remember this password. 
+and then restart your computer. Now that you have WSL installed, open up cmd again, and type WSL. This will open your default distro. After that, it will prompt you to make a username and password. Make sure you remember this password. 
 Note that the ubuntu it installs might not actually be recent enough, if so that's fine. Just go back to powershell, run `wsl --unregister Ubuntu`, then type `wsl --list --online` to see all the options. For a tested and working option, just pick `Ubuntu-26.04`, but you're free to go for a different option.
 
-## Step 2: Installing tools
+### Step 2: Installing tools
 First update everything by running `sudo apt-get update`, then `sudo apt-get upgrade`. Then run
 ```
 curl -fsSL https://raw.githubusercontent.com/Rutgers-RPL/setup-script/refs/heads/main/setup.sh | bash
 ```
 This will install CMake, Ninja, gcc-arm-none-eabi, and a few other tools you will need. 
 
-## Step 3 (optional): Setting up VS Code
+### Step 3 (optional): Setting up VS Code
 Make sure you have vscode installed, and add it to your path. In wsl, you should just be able to type `code .` in any folder to open that folder in vscode. The only extension that really helps is clangd. For clangd to work, put something like this 
 ```
 {
